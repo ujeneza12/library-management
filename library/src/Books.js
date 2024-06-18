@@ -90,7 +90,7 @@ const BookInventory = () => {
           </table>
           <div className="flex justify-between items-center mt-4">
             <button
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${currentPage === 1 ? 'invisible' : 'visible'}`}
+              className={`bg-[#243c5a] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${currentPage === 1 ? 'invisible' : 'visible'}`}
               onClick={prevPageHandler}
               disabled={currentPage === 1}
             >
@@ -101,14 +101,14 @@ const BookInventory = () => {
                 <span
                   key={number}
                   onClick={() => setCurrentPage(number)}
-                  className={`cursor-pointer px-3 py-1 rounded-full ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-500'}`}
+                  className={`cursor-pointer px-3 py-1 rounded-full ${currentPage === number ? 'bg-[#243c5a] text-white' : 'bg-gray-200 text-[blue-500]'}`}
                 >
                   {number}
                 </span>
               ))}
             </div>
             <button
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${currentPage === totalPages ? 'invisible' : 'visible'}`}
+              className={`bg-[#243c5a] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${currentPage === totalPages ? 'invisible' : 'visible'}`}
               onClick={nextPageHandler}
               disabled={currentPage === totalPages}
             >

@@ -2,42 +2,55 @@ require("dotenv").config();
 
 const router = require("express").Router();
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
 
 const db = require("../db");
 
-router.post("/student-signin", (req, res) => {
-  const sql =
-    "INSERT INTO student(`firstname`,`lastname`,`email`,`password`) values(?)";
-  const values = [
-    req.body.firstname,
-    req.body.lastname,
-    req.body.email,
-    req.body.password,
-  ];
+router.post("/student-signin", async(req, res) => {
 
-  db.query(sql, [values], (err, data) => {
-    if (err) {
-      return res.json("error");
-    }
-    return res.json(data);
-  });
-}); 
+  try {
+    const { firstname, lastname, email, password } = req.body;
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql = "INSERT INTO student(`firstname`,`lastname`,`email`,`password`) values(?)";
+    const values = [firstname, lastname, email, hashedPassword];
+
+    db.query(sql, [values], (err, data) => {
+      if (err) {
+        console.error("Database insertion error:", err);
+        return res.json({ error: "Error inserting data into the database" });
+      }
+      return res.json({ message: "Student signed in successfully", data });
+    });
+  } catch (error) {
+    console.error("Error during student sign-in:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+ 
 router.post("/student-login", (req, res) => {
-  const sql = "SELECT * FROM student where `email`=? AND `password`=?";
-  const values = [req.body.email, req.body.password];
-  const user = { email: values.email };
-  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{ expiresIn: '1h' });
+  const sql = "SELECT * FROM student WHERE `email`=?";
+  const values = [req.body.email];
 
-  db.query(sql, [req.body.email, req.body.password], (err, data) => {
+  db.query(sql, values, async (err, data) => {
     if (err) {
       return res.json("error");
     }
-    if (data.length > 0) {
-      return res.status(200).json({ accessToken: accessToken });
 
+    if (data.length > 0) {
+      const user = data[0];
+      const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+
+      if (isPasswordValid) {
+        const accessToken = jwt.sign({ email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+        return res.status(200).json({ accessToken: accessToken });
+      } else {
+        return res.status(401).json("Invalid email or password");
+      }
     } else {
-      return res.json("failed");
+      return res.status(401).json("Invalid email or password");
     }
   });
 });
